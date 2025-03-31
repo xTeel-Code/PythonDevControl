@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Dev Control - FOSS Dev Home</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --primary-gradient: linear-gradient(45deg, #2196F3, #1976D2);
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --border-color: rgba(0,0,0,.125);
+        }
+
+        [data-bs-theme="dark"] {
+            --primary-color: #dc3545;
+            --primary-gradient: linear-gradient(45deg, #dc3545, #c82333);
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: #2d2d2d;
+            --border-color: rgba(255,255,255,.125);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .navbar {
+            background: var(--primary-gradient) !important;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .card-header {
+            background: var(--primary-gradient);
+            color: #ffffff;
+            border-bottom: none;
+        }
+
+        .progress {
+            background-color: rgba(0,0,0,0.1);
+        }
+
+        [data-bs-theme="dark"] .progress {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .table {
+            color: var(--text-color);
+        }
+
+        [data-bs-theme="dark"] .table {
+            --bs-table-bg: var(--card-bg);
+            --bs-table-color: var(--text-color);
+            --bs-table-border-color: var(--border-color);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            color: #ffffff !important;
+        }
+
+        [data-bs-theme="dark"] .btn-outline-primary {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        [data-bs-theme="dark"] .btn-outline-primary:hover {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            color: #ffffff !important;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .modal-header {
+            background: var(--primary-gradient);
+            color: #ffffff;
+        }
+
+        .form-control {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .form-control:focus {
+            background-color: var(--card-bg);
+            border-color: var(--primary-color);
+            color: var(--text-color);
+        }
+
+        [data-bs-theme="dark"] .form-control {
+            background-color: #333;
+        }
+
+        [data-bs-theme="dark"] .form-control:focus {
+            background-color: #333;
+        }
+
+        .bg-primary {
+            background: var(--primary-gradient) !important;
+        }
+
+        [data-bs-theme="dark"] .text-muted {
+            color: #adb5bd !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+            filter: brightness(1.2);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-code me-2"></i>Python Dev Control
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                            <i class="fas fa-cog"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <!-- System Resources -->
+            <div class="col-md-3">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-microchip me-2"></i>System Resources</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">CPU Usage</label>
+                            <div class="progress">
+                                <div class="progress-bar" id="cpuUsage" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted" id="cpuUsageText">0%</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Memory Usage</label>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" id="memoryUsage" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted" id="memoryUsageText">0%</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Disk Usage</label>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" id="diskUsage" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted" id="diskUsageText">0%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-tasks me-2"></i>Process Manager</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Process</th>
+                                        <th>CPU %</th>
+                                        <th>Memory</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="processList">
+                                    <!-- Process list will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Developer Tools -->
+            <div class="col-md-3">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-tools me-2"></i>Developer Tools</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" id="gitStatus">
+                                <i class="fas fa-code-branch me-2"></i>Git Status
+                            </button>
+                            <button class="btn btn-outline-primary" id="terminal">
+                                <i class="fas fa-terminal me-2"></i>Terminal
+                            </button>
+                            <button class="btn btn-outline-primary" id="logs">
+                                <i class="fas fa-clipboard-list me-2"></i>System Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="settingsForm">
+                        <div class="mb-3">
+                            <label class="form-label">Update Interval (seconds)</label>
+                            <input type="number" class="form-control" id="updateInterval" value="5">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Theme</label>
+                            <select class="form-select" id="theme">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveSettings">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Add this script at the end of your body
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme handling
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('theme', theme);
+            }
+
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+
+            // Update theme when changed in settings
+            document.getElementById('theme').addEventListener('change', function(e) {
+                applyTheme(e.target.value);
+            });
+        });
+    </script>
+</body>
+</html> 

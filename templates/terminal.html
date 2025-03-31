@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal - Python Dev Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e1e;
+        }
+
+        .navbar {
+            flex-shrink: 0;
+        }
+
+        #terminal {
+            flex-grow: 1;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: 'Consolas', 'Monaco', monospace;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #output {
+            flex-grow: 1;
+            margin-bottom: 1rem;
+        }
+
+        .terminal-line {
+            margin: 0;
+            padding: 2px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .terminal-prompt {
+            color: #00ff00;
+            user-select: none;
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 1rem;
+            flex-grow: 1;
+            margin-left: 0.5rem;
+            outline: none;
+        }
+
+        .error-text {
+            color: #ff6b6b;
+        }
+
+        .success-text {
+            color: #69db7c;
+        }
+
+        .history-text {
+            color: #868e96;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #666;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #888;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-terminal me-2"></i>Terminal
+            </a>
+            <div class="navbar-nav ms-auto">
+                <button class="btn btn-outline-light btn-sm" id="clearBtn">
+                    <i class="fas fa-trash-alt me-1"></i>Clear
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="terminal">
+        <div id="output">
+            <div class="terminal-line">
+                <span class="success-text">Welcome to Python Dev Control Terminal</span>
+            </div>
+            <div class="terminal-line">
+                <span class="history-text">Type 'help' for available commands</span>
+            </div>
+        </div>
+        <div class="terminal-input-line">
+            <span class="terminal-prompt">$</span>
+            <input type="text" class="terminal-input" id="commandInput" autofocus spellcheck="false">
+        </div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const output = document.getElementById('output');
+        const commandInput = document.getElementById('commandInput');
+        const clearBtn = document.getElementById('clearBtn');
+        let commandHistory = [];
+        let historyIndex = -1;
+
+        function addToOutput(text, className = '') {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            if (className) {
+                text = `<span class="${className}">${text}</span>`;
+            }
+            line.innerHTML = text;
+            output.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function executeCommand(command) {
+            addToOutput(`$ ${command}`, 'history-text');
+            
+            fetch('/api/execute-command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command: command })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.output) {
+                    addToOutput(data.output);
+                }
+                commandInput.value = '';
+                terminal.scrollTop = terminal.scrollHeight;
+            })
+            .catch(error => {
+                addToOutput(`Error: ${error}`, 'error-text');
+                commandInput.value = '';
+            });
+        }
+
+        function handleCommand(command) {
+            command = command.trim();
+            if (!command) return;
+
+            // Add to command history
+            commandHistory.unshift(command);
+            if (commandHistory.length > 50) {
+                commandHistory.pop();
+            }
+            historyIndex = -1;
+
+            // Handle built-in commands
+            switch (command.toLowerCase()) {
+                case 'clear':
+                    output.innerHTML = '';
+                    return;
+                case 'help':
+                    addToOutput('Available commands:', 'success-text');
+                    addToOutput('  clear - Clear the terminal');
+                    addToOutput('  help - Show this help message');
+                    addToOutput('  Any other command will be executed on the system');
+                    return;
+            }
+
+            executeCommand(command);
+        }
+
+        commandInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const command = commandInput.value;
+                handleCommand(command);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    commandInput.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex > -1) {
+                    historyIndex--;
+                    commandInput.value = historyIndex === -1 ? '' : commandHistory[historyIndex];
+                }
+            }
+        });
+
+        clearBtn.addEventListener('click', function() {
+            output.innerHTML = '';
+        });
+
+        // Keep input focused
+        terminal.addEventListener('click', function() {
+            commandInput.focus();
+        });
+
+        // Initial focus
+        commandInput.focus();
+    </script>
+</body>
+</html> 
