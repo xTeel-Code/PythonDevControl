@@ -1,7 +1,7 @@
 
 # PythonDevControl
 
-**PythonDevControl** is FOSS alternative for Dev Home on Windows since they are ending this project it has basic functionalities that I will be expanding more and more throughout the time
+**PythonDevControl** is FOSS alternative for Dev Home on Windows, since they are ending this project :C , it has basic functionalities that I will be expanding more and more throughout the time
 
 It has MIT License so you can fork it and do it your way no worries about copyright ;)
 
